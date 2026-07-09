@@ -13,7 +13,7 @@ def get_fundamentals(ticker: str):
 		"forward_pe": info.get("forwardPE"),
 		"pb_ratio": info.get("priceToBook"),
 		"eps": info.get("trailingEps"),
-		"dividend_yield": info.get("dividendYield"),
+		"dividend_yield": f"{info.get("dividendYield")}%",
 		"profit_margin": info.get("profitMargins"),
 		"revenue_growth": info.get("revenueGrowth"),
 		"debt_to_equity": info.get("debtToEquity"),

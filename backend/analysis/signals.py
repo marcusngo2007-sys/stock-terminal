@@ -37,7 +37,7 @@ def interpret_signals(df):
 	if vol_ratio >= 1.5:
 		signals["Volume"] = f"High volume ({vol_ratio:.2f}x average) - strong interest"
 	elif vol_ratio <= 0.5:
-		signals["Volume"] = f"LOw volume ({vol_ratio:.2f}x average) - weak participation"
+		signals["Volume"] = f"Low volume ({vol_ratio:.2f}x average) - weak participation"
 	else:
 		signals["Volume"] = f"Normal volume ({vol_ratio:.2f}x average)"
 
