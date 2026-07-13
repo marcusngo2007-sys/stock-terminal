@@ -52,16 +52,29 @@ def get_trade_levels(ticker, verdict, current_position_entry=None):
 			atr_stop = suggested_entry - (1.5 * atr)
 			stop_loss = max(atr_stop, nearest_support * 0.98) if nearest_support else atr_stop
 			risk = suggested_entry - stop_loss
-			take_profit = nearest_resistance if nearest_resistance else suggested_entry + (2 * risk)
+			
+			if nearest_resistance:
+				take_profit = nearest_resistance
+
+			else:
+				fallback_target = current_price + (2 * risk)
+				take_profit = max(fallback_target, current_price * 1.02)
 	
 			extended = ((current_price - suggested_entry) / suggested_entry) * 100 if suggested_entry else 0
 
+			if extended > 3:
+				action = "Wait for pullback before entering"
+				note = f"Price is {extended:.1f}% above suggested entry zone. Bullish setup, but entering now means chasing an extended move."
+			else:
+				action = "Consider entering"
+				note = "Price is near the suggested entry zone."
+
 			result.update({
-				"action": "Consider entering",
+				"action": action,
 				"suggested_entry_zone": round(suggested_entry, 2),
 				"suggested_stop_loss": round(stop_loss, 2),
 				"suggested_take_profit": round(take_profit, 2),
-				"note": f"Price is {extended:.1f}% above suggested entry zone - consider waiting for a pullback" if extended > 3 else "Price is near suggested entry zone",
+				"note": note,
 			})
 
 		elif verdict == "BEARISH":
