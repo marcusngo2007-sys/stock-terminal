@@ -10,6 +10,7 @@ sys.path.append(os.path.join(os.path.dirname(__file__), "backend", "models"))
 from price_data import get_price_history
 from technical import add_technical_indicators
 from full_analysis import get_full_analysis
+from sentiment import analyze_news_sentiment
 
 st.set_page_config(page_title="Mini Bloomberg Terminal", layout="wide")
 
@@ -84,6 +85,22 @@ if analyze_clicked:
 
 		st.subheader("News Sentiment")
 		st.write(verdict["sentiment_summary"])
+
+		news_result = analyze_news_sentiment(ticker, "2026-06-25", "2026-07-08")
+
+		col_pos, col_neg, col_neu = st.columns(3)
+		col_pos.metric("Positive", f"{news_result['positive_pct']}%")
+		col_neg.metric("Negative", f"{news_result['negative_pct']}%")
+		col_neu.metric("Neutral", f"{news_result['neutral_pct']}%")
+
+		st.write("**Recent headlines:**")
+		for item in news_result["sample_headlines"]:
+			sentiment_emoji = {
+				"positive": "🟢",
+				"negative": "🔴",
+				"neutral": "⚪",
+			}.get(item["sentiment"], "⚪")
+			st.write(sentiment_emoji + " " + item["headline"])
 
 		st.subheader("Trade Levels")
 		if "suggested_entry_zone" in trade:
