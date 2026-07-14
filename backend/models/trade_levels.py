@@ -25,6 +25,7 @@ def get_trade_levels(ticker, verdict, current_position_entry=None):
 	result = {
 		"ticker": ticker, 
 		"current_price": round(current_price, 2),
+		"atr": round(atr, 2),
 		"nearest_support": nearest_support,
 		"nearest_resistance": nearest_resistance,
 	}
@@ -35,15 +36,35 @@ def get_trade_levels(ticker, verdict, current_position_entry=None):
 		atr_stop = current_price - (1.5 * atr)
 		stop_loss = max(atr_stop, nearest_support)
 
+		if unrealized_pct > 10:
+			breakeven_plus = current_position_entry + ((current_price - current_position_entry) * 0.5)
+			stop_loss = max(stop_loss, breakeven_plus)
+
 		risk = current_price - stop_loss
 		rr_target = current_price + (2 * risk)
 		take_profit = nearest_resistance if nearest_resistance else rr_target
+		
+		if verdict == "BEARISH" and unrealized_pct > 0:
+			action = "Consider taking profits"
+			note = f"You're up {unrealized_pct:.1f}%, but the verdict has turned bearish. Consider locking in gains rather than risking a reversal."
+		elif verdict == "BEARISH" and unrealized_pct <= 0:
+			action = "Consider cutting losses"
+			note = f"You're down {abs(unrealized_pct):.1f}% and the verdict is bearish. Consider exiting near your stop-loss to limit further downside."
+		elif verdict == "BULLISH":
+			action = "Consider holding"
+			note = f"Verdict remains bullish. Current position is {'up' if unrealized_pct >= 0 else 'down'} {abs(unrealized_pct):.1f}%. Stop-loss and take-profit levels below."
+		else:
+			action = "Hold and monitor"
+			note = f"Mixed signals. Current position is {'up' if unrealized_pct >= 0 else 'down'} {abs(unrealized_pct):.1f}%. No strong conviction either way right now."
 
 		result.update({
 			"position_entry": current_position_entry,
 			"unrealized_pct": round(unrealized_pct, 2),
+			"action": action,
 			"suggested_stop_loss": round(stop_loss, 2),
 			"suggested_take_profit": round(take_profit, 2),
+			"take_profit_below_entry": take_profit < current_position_entry,
+			"note": note,
 		})
 
 	else:

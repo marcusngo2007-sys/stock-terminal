@@ -11,50 +11,60 @@ from sentiment import analyze_news_sentiment
 
 
 def score_technical(df):
-    """
-    Converts technical signals into a numeric score from -100 (very bearish)
-    to +100 (very bullish), based on simple, explainable rules.
-    """
     latest = df.iloc[-1]
     score = 0
 
-    # RSI: extreme readings contribute to score
-    rsi = latest["RSI"]
-    if rsi <= 30:
-        score += 20   # oversold - potential bounce, bullish
-    elif rsi >= 70:
-        score -= 20   # overbought - potential pullback, bearish
-
-    # MACD: trend momentum direction
-    if latest["MACD_12_26_9"] > latest["MACDs_12_26_9"]:
-        score += 20
-    else:
-        score -= 20
-
-    # Moving average trend
     price = latest["Close"]
     sma20 = latest["SMA_20"]
     sma50 = latest["SMA_50"]
     if price > sma20 > sma50:
         score += 30
+        trend_direction = "up"
     elif price < sma20 < sma50:
         score -= 30
+        trend_direction = "down"
+    else:
+        trend_direction = "sideways"
 
-    # Volume confirmation - high volume strengthens whatever
-    # direction the trend is already pointing
+    if latest["MACD_12_26_9"] > latest["MACDs_12_26_9"]:
+        score += 20
+    else:
+        score -= 20
+
+    rsi = latest["RSI"]
+    if rsi <= 30:
+        if trend_direction == "down":
+            score += 5
+        else:
+            score += 20
+    elif rsi >= 70:
+        if trend_direction == "up":
+            score -= 5
+        else:
+            socre -= 20 
+
+    if len(df) >= 6:
+        price_5d_ago = df.iloc[-6]["Close"]
+        roc_5d = ((price - price_5d_ago) / price_5d_ago) * 100
+
+        if roc_5d <= -10:
+            score -= 30
+        elif roc_5d <= -5:
+            score -= 15
+        elif roc_5d >= 10:
+            score += 30
+        elif roc_5d >= 5:
+            score += 15
+
     vol_ratio = latest["Volume_Ratio"]
     if vol_ratio >= 1.5:
         score += 10 if score > 0 else (-10 if score < 0 else 0)
 
-    # Clamp score to -100/+100 range just in case
     score = max(-100, min(100, score))
     return score
 
 
 def score_fundamental(fund_signals):
-    """
-    Converts fundamental signal text into a numeric score, -100 to +100.
-    """
     score = 0
 
     valuation = fund_signals.get("Valuation", "")
@@ -80,20 +90,12 @@ def score_fundamental(fund_signals):
 
 
 def score_sentiment(sentiment_result):
-    """
-    Converts sentiment percentages into a numeric score, -100 to +100.
-    """
     positive = sentiment_result["positive_pct"]
     negative = sentiment_result["negative_pct"]
     return max(-100, min(100, positive - negative))
 
 
 def get_verdict(ticker, peer_tickers, from_date, to_date):
-    """
-    Combines technical, fundamental, and sentiment scores into
-    one overall weighted verdict.
-    """
-    # Gather all underlying analysis
     df = get_price_history(ticker, period="6mo")
     df = add_technical_indicators(df)
     tech_signals = interpret_signals(df)
@@ -105,7 +107,6 @@ def get_verdict(ticker, peer_tickers, from_date, to_date):
     sentiment_result = analyze_news_sentiment(ticker, from_date, to_date)
     sent_score = score_sentiment(sentiment_result)
 
-    # Weights - adjustable in one place
     weight_technical = 0.50
     weight_sentiment = 0.25
     weight_fundamental = 0.25
