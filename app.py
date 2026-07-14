@@ -11,6 +11,7 @@ from price_data import get_price_history
 from technical import add_technical_indicators
 from full_analysis import get_full_analysis
 from sentiment import analyze_news_sentiment
+from datetime import datetime
 
 st.set_page_config(page_title="Mini Bloomberg Terminal", layout="wide")
 
@@ -41,6 +42,7 @@ if analyze_clicked:
 				to_date = "2026-07-08",
 				position_entry = position_entry,
 			)
+			fetch_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
 		verdict = result["verdict"]
 		trade = result["trade_levels"]
@@ -55,6 +57,8 @@ if analyze_clicked:
 		confidence_value = verdict["confidence"]
 		st.progress(min(int(confidence_value), 100), text=f"Confidence: {confidence_value}%")
 		
+		st.caption(f"Data fetched at {fetch_time}. Prices may be delayed.")
+
 		m1, m2, m3, m4 = st.columns(4)
 		m1.metric("Current Price", f"${trade['current_price']}")
 		m2.metric("Nearest Support", f"${trade['nearest_support']}" if trade['nearest_support'] else "N/A")
