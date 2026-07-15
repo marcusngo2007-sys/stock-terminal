@@ -9,12 +9,12 @@ def get_peer_comparison_table(ticker, peer_tickers):
 
 	for t in all_tickers:
 		data = get_fundamentals(t)
-		rows.appned({
+		rows.append({
 			"Ticker": t,
 			"P/E": data["pe_ratio"],
 			"Profit Margin": f"{data['profit_margin']*100:.1f}%" if data["profit_margin"] else "N/A",
 			"Revenue Growth": f"{data['revenue_growth']*100:.1f}%" if data["revenue_growth"] else "N/A",
-			"Market Cap": data["marlet_cap"],
+			"Market Cap": data["market_cap"],
 		})
 
 	return rows

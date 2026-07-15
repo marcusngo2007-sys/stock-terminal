@@ -29,3 +29,26 @@ if __name__ == "__main__":
 	print("\nTRADE LEVELS:")
 	for key, value in result["trade_levels"].items():
 		print(f" {key}: {value}")
+
+def get_watchlist_summary(tickers, peer_tickers, from_date, to_date):
+	summary = []
+	
+	for t in tickers:
+		try:
+			result = get_verdict(t, peer_tickers, from_date, to_date)
+			trade = get_trade_levels(t, result["verdict"])
+
+			summary.append({
+				"Ticker": t,
+				"Price": trade["current_price"],
+				"Verdict": result["verdict"],
+				"Confidence": result["confidence"],
+			})
+		except ValueError:
+			summary.append({
+				"Ticker": t,
+				"Price": None,
+				"Verdict": "N/A",
+				"Confidence": None,
+			})
+	return summary

@@ -14,6 +14,7 @@ from full_analysis import get_full_analysis
 from sentiment import analyze_news_sentiment
 from datetime import datetime
 from fundamental_score import get_peer_comparison_table
+from full_analysis import get_watchlist_summary
 
 st.set_page_config(page_title="Mini Bloomberg Terminal", layout="wide")
 
@@ -30,6 +31,23 @@ with col2:
 with col3:
 	st.write("")
 	analyze_clicked = st.button("Analyze", use_container_width = True)
+
+with st.sidebar:
+	st.subheader("Watchlist")
+	watchlist_input = st.text_input("Tickers (comma-separated)", value = "AAPL, MSFT, TSLA, NVDA")
+	watchlist_clicked = st.button("Load Watchlist")
+
+	if watchlist_clicked:
+		tickers_list = [t.strip().upper() for t in watchlist_input.split(",")]
+		with st.spinner("Loading watchlist..."):
+			watchlist_data = get_watchlist_summary(
+				tickers_list,
+				peer_tickers = ["MSFT", "GOOGL", "META"],
+				from_date = "2026-06-25",
+				to_date = "2026-07-08",
+			)
+		watchlist_df = pd.DataFrame(watchlist_data)
+		st.dataframe(watchlist_df, use_container_width=True, hide_index=True)
 
 if analyze_clicked:
 	try:
