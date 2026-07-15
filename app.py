@@ -2,6 +2,7 @@ import streamlit as st
 import sys
 import os
 import plotly.graph_objects as go
+import pandas as pd
 
 sys.path.append(os.path.join(os.path.dirname(__file__), "backend", "data"))
 sys.path.append(os.path.join(os.path.dirname(__file__), "backend", "analysis"))
@@ -12,6 +13,7 @@ from technical import add_technical_indicators
 from full_analysis import get_full_analysis
 from sentiment import analyze_news_sentiment
 from datetime import datetime
+from fundamental_score import get_peer_comparison_table
 
 st.set_page_config(page_title="Mini Bloomberg Terminal", layout="wide")
 
@@ -86,6 +88,11 @@ if analyze_clicked:
 			st.subheader("Fundamental Signals")
 			for name, read in verdict["fundamental_signals"].items():
 				st.write(name + ": " + str(read))
+
+		st.subheader("Peer Comparison")
+		peer_table = get_peer_comparison_table(ticker, ["MSFT", "GOOGL", "META"])
+		peer_df = pd.DataFrame(peer_table)
+		st.dataframe(peer_df, use_container_width=True, hide_index=True)	
 
 		st.subheader("News Sentiment")
 		st.write(verdict["sentiment_summary"])
