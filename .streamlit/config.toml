@@ -1,6 +1,4 @@
-[
-theme
-]
+[theme]
 base = "dark"
 primaryColor = "#00D4AA"
 backgroundColor = "#0E1117"
