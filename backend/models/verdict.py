@@ -41,7 +41,7 @@ def score_technical(df):
         if trend_direction == "up":
             score -= 5
         else:
-            socre -= 20 
+            score -= 20 
 
     if len(df) >= 6:
         price_5d_ago = df.iloc[-6]["Close"]
