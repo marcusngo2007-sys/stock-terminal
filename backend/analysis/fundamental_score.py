@@ -14,7 +14,7 @@ def get_peer_comparison_table(ticker, peer_tickers):
 			"P/E": data["pe_ratio"],
 			"Profit Margin": f"{data['profit_margin']*100:.1f}%" if data["profit_margin"] else "N/A",
 			"Revenue Growth": f"{data['revenue_growth']*100:.1f}%" if data["revenue_growth"] else "N/A",
-			"Market Cap": data["market_cap"],
+			"Market Cap": f"${data['market_cap']/1e12:.2f}T" if data["market_cap"] and data["market_cap"] >= 1e12 else f"${data['market_cap']/1e9:.1f}B" if data["market_cap"] else "N/A",
 		})
 
 	return rows
